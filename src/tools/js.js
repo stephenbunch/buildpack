@@ -4,6 +4,7 @@
  * @param {Function} done
  */
 export function concat( files, outfile, done ) {
+  var gulp = require( 'gulp' );
   var path = require( 'path' );
   var concat = require( 'gulp-concat' );
   var sourcemaps = require( 'gulp-sourcemaps' );

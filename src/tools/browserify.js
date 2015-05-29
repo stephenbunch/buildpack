@@ -2,45 +2,22 @@ import { defaultOptions } from './babel';
 
 /**
  * @param {String} entryFile
- * @param {String} outfile
- * @param {Object} [opts]
- * @param {Function} done
- * @returns {stream.Readable}
- */
-export function buildBundle( entryFile, outfile, opts, done ) {
-  if ( typeof opts === 'function' ) {
-    done = opts;
-    opts = {};
-  }
-  return bundle( browserify( entryFile, opts ), outfile, done );
-};
-
-export function buildBundleMinified( entryFile, outfile, opts, done ) {
-  if ( typeof opts === 'function' ) {
-    done = opts;
-    opts = {};
-  }
-  return bundle( browserifyMinify( entryFile, opts ), outfile, done );
-};
-
-/**
- * @param {String} entryFile
- * @param {Object} [opts]
+ * @param {Object} [options]
  * @returns {Browserify}
  */
-export function browserify( entryFile, opts ) {
+export function browserify( entryFile, options ) {
   var _ = require( 'lodash' );
   var browserify = require( 'browserify' );
   var babelify = require( 'babelify' );
   var path = require( 'path' );
 
-  opts = _.extend({
+  options = _.extend({
     entries: entryFile,
     debug: true
-  }, opts );
+  }, options );
 
-  return (
-    browserify( opts )
+  var bundle =
+    browserify( options )
       .transform(
         babelify.configure(
           _.extend( defaultOptions( path.dirname( entryFile ) ), {
@@ -48,13 +25,19 @@ export function browserify( entryFile, opts ) {
           })
         )
       )
-      .transform( require.resolve( 'require-globify' ) )
-  );
-};
+      .transform( require.resolve( 'require-globify' ) );
 
-export function browserifyMinify( entryFile, opts ) {
-  return browserify( entryFile, opts )
-    .transform( require.resolve( 'uglifyify' ) );
+  if ( options ) {
+    if ( options.shim ) {
+      let shim = require( 'browserify-global-shim' );
+      bundle = bundle.transform( shim.configure( options.shim ) );
+    }
+    if ( options.uglify ) {
+      bundle = bundle.transform( require.resolve( 'uglifyify' ) );
+    }
+  }
+
+  return bundle;
 };
 
 /**
@@ -92,14 +75,14 @@ export function bundle( browserify, outfile, opts, done ) {
 /**
  * @param {String} entryFile
  * @param {String} outfile
- * @param {Object} [opts]
+ * @param {Object} [options]
  * @param {Function} callback
  * @returns {Function}
  */
-export function watchify( entryFile, outfile, opts, callback ) {
-  if ( typeof opts === 'function' ) {
-    callback = opts;
-    opts = {};
+export function watchify( entryFile, outfile, options, callback ) {
+  if ( typeof options === 'function' ) {
+    callback = options;
+    options = {};
   }
 
   var path = require( 'path' );
@@ -110,7 +93,7 @@ export function watchify( entryFile, outfile, opts, callback ) {
   var b = watchify(
     browserify(
       entryFile,
-      _.extend( opts, watchify.args )
+      _.extend( options, watchify.args )
     )
   );
 
@@ -127,7 +110,9 @@ export function watchify( entryFile, outfile, opts, callback ) {
   // removed files since all the module imports happen in the index.js file
   // dynamically using the globify transform. So we'll use fireworm to
   // detect changes and tell browserify that the index file changed.
-  var watcher = chokidar.watch( path.dirname( entryFile ) );
+  var watcher = chokidar.watch( path.dirname( entryFile ), {
+    ignoreInitial: true
+  });
   watcher.on( 'add', file => b.invalidate( entryFile ) );
   watcher.on( 'unlink', file => b.invalidate( entryFile ) );
 

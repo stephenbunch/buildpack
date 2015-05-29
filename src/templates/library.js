@@ -40,7 +40,7 @@ export function register( gulp, { projectDir, name } ) {
 
   gulp.task( 'clean', [ 'clean:js' ] );
 
-  gulp.task( 'karma', function() {
+  gulp.task( 'serve', function() {
     serveKarma( specFiles );
   });
 };

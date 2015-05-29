@@ -140,10 +140,21 @@ export function concatStreams( streams, outfile, done ) {
   var concat = require( 'gulp-concat' );
   var sourcemaps = require( 'gulp-sourcemaps' );
   var merge = require( 'merge-stream' );
+  var minify = require( 'gulp-minify-css' );
+  var rename = require( 'gulp-rename' );
+
+  var outdir = path.dirname( outfile );
   return merge.apply( undefined, streams )
     .pipe( sourcemaps.init() )
     .pipe( concat( path.basename( outfile ) ) )
     .pipe( sourcemaps.write() )
-    .pipe( gulp.dest( path.dirname( outfile ) ) )
+    .pipe( gulp.dest( outdir ) )
+    .pipe(
+      minify({
+        keepSpecialComments: 0
+      })
+    )
+    .pipe( rename({ extname: '.min.css' }) )
+    .pipe( gulp.dest( outdir ) )
     .on( 'end', done );
 };

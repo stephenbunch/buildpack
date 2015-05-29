@@ -1,4 +1,4 @@
-import { watch } from './watch';
+import { watchGlob } from './watch';
 
 /**
  * @param {String} entryFile
@@ -15,10 +15,14 @@ export function serve( entryFile, opts, callback ) {
     }
     app = start( entryFile, opts, callback );
   };
-  var watcher = watch( path.dirname( entryFile ), restart );
-  return () => {
-    watcher.close();
-    app.kill();
+  var unwatch = watchGlob( path.dirname( entryFile ), restart );
+  restart();
+  return {
+    restart: restart,
+    kill() {
+      unwatch();
+      app.kill();
+    }
   };
 };
 
@@ -47,7 +51,9 @@ export function start( entryFile, opts, callback ) {
       if ( message.status === 'online' ) {
         callback( message );
       }
-    } catch ( err ) {}
+    } catch ( err ) {
+      console.warn( err );
+    }
   });
   return app;
 };

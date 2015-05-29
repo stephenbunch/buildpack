@@ -28,8 +28,14 @@ export function defaultOptions( specFiles ) {
     },
     browserify: {
       debug: true,
-      transform: [ APP_ROOT + '/node_modules/babelify' ]
-    }
+      transform: [ require.resolve( 'babelify' ) ]
+    },
+    plugins: [
+      require.resolve( 'karma-browserify' ),
+      require.resolve( 'karma-mocha' ),
+      require.resolve( 'karma-chrome-launcher' ),
+      require.resolve( 'karma-phantomjs-launcher' )
+    ]
   };
 };
 

@@ -23,6 +23,7 @@ export function defaultOptions( specFiles ) {
     singleRun: false,
     browsers: [ 'ChromeCanary' ],
     logLevel: 'INFO',
+    captureConsole: true,
     preprocessors: {
       [ specFiles ]: 'browserify'
     },

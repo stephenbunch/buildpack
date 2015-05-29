@@ -24,7 +24,9 @@ export function register( gulp, { projectDir, name } ) {
   registerTestTasks( gulp, {
     'all': {
       specs: specFiles,
-      platforms: [ 'node', 'browser' ]
+
+      // Somehow, running mocha tests first can screw up the karam environment.
+      platforms: [ 'browser', 'node' ]
     }
   });
 

@@ -1,0 +1,53 @@
+{
+  "name": "@stephenbunch/buildpack",
+  "version": "0.0.1",
+  "description": "Contains common tasks for building JS projects.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stephenbunch/buildpack"
+  },
+  "author": "Stephen Bunch",
+  "license": "MIT",
+  "dependencies": {
+    "autoprefixer-core": "^5.1.11",
+    "babel": "^5.4.3",
+    "babelify": "^6.1.1",
+    "browser-sync": "^2.7.5",
+    "browserify": "^10.2.0",
+    "browserify-global-shim": "git://github.com/stephenbunch/browserify-global-shim.git",
+    "chai": "^2.3.0",
+    "chokidar": "^1.0.1",
+    "del": "^1.1.1",
+    "glob": "^5.0.10",
+    "glob2base": "0.0.12",
+    "gulp": "^3.8.11",
+    "gulp-babel": "^5.1.0",
+    "gulp-concat": "^2.5.2",
+    "gulp-filter": "^2.0.2",
+    "gulp-minify-css": "^1.1.1",
+    "gulp-postcss": "^5.1.6",
+    "gulp-rename": "^1.2.2",
+    "gulp-sass": "^2.0.1",
+    "gulp-sourcemaps": "^1.5.2",
+    "karma": "^0.12.31",
+    "karma-browserify": "^4.1.2",
+    "karma-chrome-launcher": "^0.1.12",
+    "karma-mocha": "^0.1.10",
+    "karma-phantomjs-launcher": "^0.1.4",
+    "lodash": "^3.8.0",
+    "merge-stream": "^0.1.7",
+    "mocha": "^2.2.4",
+    "require-directory": "^2.1.0",
+    "require-globify": "^1.2.0",
+    "sinon": "^1.14.1",
+    "sinon-chai": "^2.7.0",
+    "strip-json-comments": "^1.0.2",
+    "uglifyify": "^3.0.1",
+    "vinyl-source-stream": "^1.1.0",
+    "watchify": "git://github.com/stephenbunch/watchify.git"
+  }
+}

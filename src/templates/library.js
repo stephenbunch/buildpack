@@ -28,6 +28,10 @@ export function register( gulp, { projectDir, name } ) {
     }
   });
 
+  gulp.task( 'default', function( done ) {
+    require( 'run-sequence' ).use( gulp )( 'make', 'test', done );
+  });
+
   gulp.task( 'clean:js', function( done ) {
     require( 'del' )( `${ projectDir }/{lib,dist}`, done );
   });

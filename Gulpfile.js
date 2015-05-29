@@ -10,3 +10,5 @@ gulp.task( 'make', function( done ) {
 gulp.task( 'clean', function( done ) {
   require( 'del' )( 'lib/', done );
 });
+
+gulp.task( 'default', [ 'make' ] );

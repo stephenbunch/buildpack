@@ -1,6 +1,6 @@
 import { register as registerTestTasks } from '../tools/test';
 import { runConcurrent } from '../tools/util';
-import { buildBundle } from '../tools/browserify';
+import { bundle, browserify } from '../tools/browserify';
 import { babel } from '../tools/babel';
 import { serve as serveKarma } from '../tools/karma';
 
@@ -9,9 +9,13 @@ export function register( gulp, { projectDir, name } ) {
 
   gulp.task( 'make:js', function( done ) {
     var makeBundle = done => {
-      buildBundle( `${ projectDir }/src/index.js`, `${ projectDir }/dist/${ name }.js`, {
-        standalone: name
-      }, done );
+      bundle(
+        browserify( `${ projectDir }/src/index.js`, {
+          standalone: name
+        }),
+        `${ projectDir }/dist/${ name }.js`,
+        done
+      );
     };
     var makeJs = done => {
       babel( `${ projectDir }/src/**/*`, `${ projectDir }/lib`, done );

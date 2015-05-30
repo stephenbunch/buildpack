@@ -42,7 +42,7 @@ export function register( gulp, options ) {
       };
 
       if ( serve.watch ) {
-        watchGlob( serve.watch, () => app.restart() );
+        watchGlob( serve.watch, reload );
       }
 
       if ( make ) {

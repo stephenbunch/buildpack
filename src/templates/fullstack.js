@@ -12,6 +12,7 @@ export function register( gulp, options ) {
 
   if ( make ) {
     registerMakeTasks( gulp, make, projectDir );
+    gulp.task( 'default', [ 'make' ] );
   }
 
   if ( clean ) {

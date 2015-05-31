@@ -56,6 +56,7 @@ export function register( gulp, options ) {
   var { projectDir, make, clean, serve } = options;
   if ( make ) {
     registerMakeTasks( gulp, make, projectDir );
+    gulp.task( 'default', [ 'make' ] );
   }
   if ( clean ) {
     let cleanFunc = makeCleanFunction( clean, projectDir );

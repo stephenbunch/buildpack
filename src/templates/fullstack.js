@@ -6,6 +6,7 @@ import {
 import { watchGlob } from '../tools/watch';
 import { makeCleanFunction } from '../tools/clean';
 import { watchGroups } from './frontend';
+import { incrementBuild, tagVersion, updateHooks } from '../tools/git';
 
 export function register( gulp, options ) {
   var { projectDir, serve, make, clean } = options;
@@ -51,4 +52,16 @@ export function register( gulp, options ) {
       }
     });
   }
+
+  gulp.task( 'git:increment-build', done => {
+    incrementBuild( projectDir + '/package.json', projectDir + '/version.json', done );
+  });
+
+  gulp.task( 'git:tag-version', done => {
+    tagVersion( projectDir + '/version.json', done );
+  });
+
+  gulp.task( 'git:update-hooks', () => {
+    updateHooks( projectDir, projectDir + '/hooks' );
+  });
 };

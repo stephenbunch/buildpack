@@ -5,8 +5,7 @@ import {
 } from '../tools/make';
 import { watchGlob, watchGroups } from '../tools/watch';
 import { makeCleanFunction } from '../tools/clean';
-import { incrementBuild, tagVersion, updateHooks } from '../tools/git';
-import { generateSecret } from '../tools/generate';
+import { register as registerCommon } from './common';
 
 export function register( gulp, options ) {
   var { projectDir, serve, make, clean } = options;
@@ -61,25 +60,5 @@ export function register( gulp, options ) {
     });
   }
 
-  gulp.task( 'git:increment-build', function( done ) {
-    incrementBuild( projectDir + '/package.json', projectDir + '/version.json', done );
-  });
-
-  gulp.task( 'git:tag-version', function( done ) {
-    tagVersion( projectDir + '/version.json', done );
-  });
-
-  gulp.task( 'git:update-hooks', function() {
-    updateHooks( projectDir, projectDir + '/hooks' );
-  });
-
-  gulp.task( 'secret', function( done ) {
-    generateSecret( function( err, secret ) {
-      if ( err ) {
-        return done( err );
-      }
-      console.log( secret );
-      done();
-    });
-  });
+  registerCommon( gulp, projectDir );
 };

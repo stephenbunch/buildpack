@@ -9,6 +9,7 @@ import { watchGlob, watchGroups } from '../tools/watch';
 import { makeCleanFunction } from '../tools/clean';
 import { watchify } from '../tools/browserify';
 import { Promise } from 'bluebird';
+import { register as registerCommon } from './common';
 
 // Example ____________________________________________________________________
 
@@ -95,4 +96,6 @@ export function register( gulp, options ) {
       }
     });
   }
+
+  registerCommon( gulp, projectDir );
 };

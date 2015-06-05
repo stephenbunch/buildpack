@@ -3,6 +3,7 @@ import { runConcurrent } from '../tools/util';
 import { bundle, browserify } from '../tools/browserify';
 import { babel } from '../tools/babel';
 import { serve as serveKarma } from '../tools/karma';
+import { register as registerCommon } from './common';
 
 export function register( gulp, { projectDir, name } ) {
   const specFiles = `${ projectDir }/test/**/*.spec.js`;
@@ -47,4 +48,6 @@ export function register( gulp, { projectDir, name } ) {
   gulp.task( 'serve', function() {
     serveKarma( specFiles );
   });
+
+  registerCommon( gulp, projectDir );
 };

@@ -1,3 +1,10 @@
+import {
+  makeJsBuilder,
+  makeCssBuilder,
+  makeSassBuilder
+} from '../tools/make';
+import { watchify } from '../tools/browserify';
+
 /**
  * @param {String|Array.<String>} paths
  * @param {Function} callback

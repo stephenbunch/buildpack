@@ -3,9 +3,8 @@ import {
   register as registerMakeTasks,
   resolveGroups
 } from '../tools/make';
-import { watchGlob } from '../tools/watch';
+import { watchGlob, watchGroups } from '../tools/watch';
 import { makeCleanFunction } from '../tools/clean';
-import { watchGroups } from './frontend';
 import { incrementBuild, tagVersion, updateHooks } from '../tools/git';
 import { generateSecret } from '../tools/generate';
 
@@ -27,10 +26,18 @@ export function register( gulp, options ) {
       var path = require( 'path' );
       var browserSync;
 
-      var app = serveApp( path.resolve( projectDir, serve.entry ), serve, function( message ) {
+      var app = serveApp( path.resolve( projectDir, serve.entry ), serve, async function( message ) {
         if ( !browserSync ) {
+          var portfinder = require( 'portfinder' );
+          portfinder.basePort = 3000;
+          var getPortAsync = Promise.promisify( portfinder.getPort );
+
           browserSync = require( 'browser-sync' ).create();
           browserSync.init({
+            ui: {
+              port: await getPortAsync()
+            },
+            port: await getPortAsync(),
             proxy: `localhost:${ message.port }`
           });
         } else {

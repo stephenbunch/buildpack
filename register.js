@@ -1,4 +1,3 @@
-require( 'harmonize' )();
 require( 'babel/register' );
 
 module.exports = function( gulp, config ) {

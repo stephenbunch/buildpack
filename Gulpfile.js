@@ -1,4 +1,3 @@
-require( 'harmonize' )();
 require( 'babel/register' );
 
 var gulp = require( 'gulp' );

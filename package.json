@@ -1,6 +1,6 @@
 {
   "name": "@stephenbunch/buildpack",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "Contains common tasks for building JS projects.",
   "main": "index.js",
   "scripts": {
@@ -55,6 +55,7 @@
     "strip-json-comments": "^1.0.2",
     "uglifyify": "^3.0.1",
     "vinyl-source-stream": "^1.1.0",
-    "watchify": "git://github.com/stephenbunch/watchify.git"
+    "watchify": "git://github.com/stephenbunch/watchify.git",
+    "yargs": "^3.10.0"
   }
 }

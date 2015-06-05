@@ -11,7 +11,10 @@ export function register( gulp, projectDir ) {
   });
 
   gulp.task( 'git:update-hooks', function() {
-    updateHooks( projectDir, projectDir + '/hooks' );
+    var yargs = require( 'yargs' );
+    var args = yargs.default( 'path', 'hooks' ).argv;
+    var path = require( 'path' );
+    updateHooks( projectDir, path.resolve( projectDir, args.path ) );
   });
 
   gulp.task( 'secret', function( done ) {

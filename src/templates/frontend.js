@@ -82,7 +82,6 @@ export function register( gulp, options ) {
         watchGroups( resolveGroups( make, projectDir ), reload );
       }
     });
-    registerServeTask( gulp, options );
   }
 };
 

@@ -10,6 +10,7 @@ export function browserify( entryFile, options ) {
   var browserify = require( 'browserify' );
   var babelify = require( 'babelify' );
   var path = require( 'path' );
+  var envify = require( 'envify/custom' );
 
   options = _.extend({
     entries: entryFile,
@@ -27,14 +28,17 @@ export function browserify( entryFile, options ) {
       )
       .transform( require.resolve( 'require-globify' ) );
 
-  if ( options ) {
-    if ( options.shim ) {
-      let shim = require( 'browserify-global-shim' );
-      bundle = bundle.transform( shim.configure( options.shim ) );
-    }
-    if ( options.uglify ) {
-      bundle = bundle.transform( require.resolve( 'uglifyify' ) );
-    }
+  if ( options.shim ) {
+    let shim = require( 'browserify-global-shim' );
+    bundle = bundle.transform( shim.configure( options.shim ) );
+  }
+
+  if ( options.envify ) {
+    bundle = bundle.transform( envify( options.envify ) );
+  }
+
+  if ( options.uglify ) {
+    bundle = bundle.transform( require.resolve( 'uglifyify' ) );
   }
 
   return bundle;

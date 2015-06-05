@@ -1,6 +1,6 @@
 {
   "name": "@stephenbunch/buildpack",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Contains common tasks for building JS projects.",
   "main": "index.js",
   "scripts": {
@@ -14,8 +14,8 @@
   "license": "MIT",
   "dependencies": {
     "autoprefixer-core": "^5.1.11",
-    "babel": "^5.4.3",
-    "babelify": "^6.1.1",
+    "babel": "^5.5.3",
+    "babelify": "^6.1.2",
     "browser-sync": "^2.7.5",
     "browserify": "^10.2.0",
     "browserify-global-shim": "git://github.com/stephenbunch/browserify-global-shim.git",

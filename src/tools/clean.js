@@ -7,7 +7,7 @@ export function makeCleanFunction( paths, projectDir ) {
   if ( typeof paths === 'string' ) {
     paths = path.resolve( projectDir, paths );
   } else {
-    paths = paths.map( glob => path.resolve( projectDir, paths ) );
+    paths = paths.map( glob => path.resolve( projectDir, glob ) );
   }
   return done => {
     require( 'del' )( paths, done );

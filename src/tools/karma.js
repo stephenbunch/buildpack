@@ -21,7 +21,7 @@ export function defaultOptions( specFiles ) {
     colors: true,
     autoWatch: false,
     singleRun: false,
-    browsers: [ 'ChromeCanary' ],
+    browsers: [ 'Chrome' ],
     logLevel: 'INFO',
     captureConsole: true,
     preprocessors: {
@@ -66,13 +66,19 @@ export function run( specFiles, opts, done ) {
 export function serve( specFiles, opts ) {
   var _ = require( 'lodash' );
   var { server, runner } = require( 'karma' );
+  var started = false;
   server.start(
     _.extend( defaultOptions( specFiles ), opts ),
-    () => runner.run( {} )
+    () => {
+      runner.run( {} );
+      started = true;
+    }
   );
   return {
     reload: () => {
-      runner.run( {} );
+      if ( started ) {
+        runner.run( {} );
+      }
     }
   };
 };

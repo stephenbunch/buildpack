@@ -4,22 +4,30 @@ import { bundle, browserify } from '../tools/browserify';
 import { babel } from '../tools/babel';
 import { serve as serveKarma } from '../tools/karma';
 import { register as registerCommon } from './common';
+import { watchGlob } from '../tools/watch';
+import { watchify } from '../tools/browserify';
 
-export function register( gulp, { projectDir, name } ) {
+export function register( gulp, options ) {
+  var { projectDir } = options;
+  delete options.projectDir;
+
   const specFiles = `${ projectDir }/test/**/*.spec.js`;
+  const sourceFiles = `${ projectDir }/src/**/*`;
+  const entryFile = `${ projectDir }/src/index.js`;
+  const outFile = `${ projectDir }/dist/${ options.standalone }.js`;
+
+  var makeJs = done => {
+    babel( sourceFiles, `${ projectDir }/lib`, done );
+  };
 
   gulp.task( 'make:js', function( done ) {
+    var _ = require( 'lodash' );
     var makeBundle = done => {
-      bundle(
-        browserify( `${ projectDir }/src/index.js`, {
-          standalone: name
-        }),
-        `${ projectDir }/dist/${ name }.js`,
-        done
-      );
-    };
-    var makeJs = done => {
-      babel( `${ projectDir }/src/**/*`, `${ projectDir }/lib`, done );
+      if ( options.standalone ) {
+        bundle( browserify( entryFile, options ), outFile, done );
+      } else {
+        done();
+      }
     };
     runConcurrent( [ makeBundle, makeJs ], done );
   });
@@ -45,8 +53,16 @@ export function register( gulp, { projectDir, name } ) {
 
   gulp.task( 'clean', [ 'clean:js' ] );
 
-  gulp.task( 'serve', function() {
-    serveKarma( specFiles );
+  gulp.task( 'serve', function( done ) {
+    var karma = serveKarma( specFiles, {
+      autoWatch: true
+    });
+    watchGlob( sourceFiles, () => {
+      makeJs( karma.reload );
+    });
+    if ( options.standalone ) {
+      watchify( entryFile, outFile, options, karma.reload );
+    }
   });
 
   registerCommon( gulp, projectDir );

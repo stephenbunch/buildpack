@@ -41,6 +41,11 @@ export function browserify( entryFile, options ) {
     bundle = bundle.transform( require.resolve( 'uglifyify' ) );
   }
 
+  if ( options.transform ) {
+    bundle = options.transform.reduce(
+      ( bundle, func ) => bundle.transform( func ), bundle );
+  }
+
   return bundle;
 };
 

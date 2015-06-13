@@ -6,6 +6,7 @@ import {
 import { watchGlob, watchGroups } from '../tools/watch';
 import { makeCleanFunction } from '../tools/clean';
 import { register as registerCommon } from './common';
+import { Promise } from 'bluebird';
 
 export function register( gulp, options ) {
   var { projectDir, serve, make, clean } = options;
@@ -21,16 +22,15 @@ export function register( gulp, options ) {
   }
 
   if ( serve ) {
-    gulp.task( 'serve', function() {
+    gulp.task( 'serve', function( done ) {
       var path = require( 'path' );
+      var portfinder = require( 'portfinder' );
+      portfinder.basePort = 3000;
+      var getPortAsync = Promise.promisify( portfinder.getPort );
       var browserSync;
 
       var app = serveApp( path.resolve( projectDir, serve.entry ), serve, async function( message ) {
         if ( !browserSync ) {
-          var portfinder = require( 'portfinder' );
-          portfinder.basePort = 3000;
-          var getPortAsync = Promise.promisify( portfinder.getPort );
-
           browserSync = require( 'browser-sync' ).create();
           browserSync.init({
             ui: {
@@ -42,6 +42,8 @@ export function register( gulp, options ) {
         } else {
           browserSync.reload();
         }
+        done();
+        done = () => {};
       });
 
       var reload = () => {

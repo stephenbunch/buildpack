@@ -4,6 +4,9 @@ import {
   makeSassBuilder
 } from '../tools/make';
 import { watchify } from '../tools/browserify';
+import { copy } from '../tools/copy';
+import { resolveDestinationFromGlob } from '../tools/util';
+import { buildEjs } from '../tools/ejs';
 
 /**
  * @param {String|Array.<String>} paths
@@ -16,9 +19,9 @@ export function watchGlob( paths, callback ) {
     var watcher = chokidar.watch( paths, {
       ignoreInitial: true
     });
-    watcher.on( 'add', callback );
-    watcher.on( 'unlink', callback );
-    watcher.on( 'change', callback );
+    watcher.on( 'add', path => callback( path, 'add' ) );
+    watcher.on( 'unlink', path => callback( path, 'unlink' ) );
+    watcher.on( 'change', path => callback( path, 'change' ) );
   }
   return () => {
     if ( watcher ) {
@@ -38,38 +41,65 @@ export function watchGroups( groups, callback ) {
   for ( let groupName in groups ) {
     let group = groups[ groupName ];
     if ( group.css ) {
-      let paths = group.css.reduce( ( paths, task ) => {
-        return paths.concat(
-          task.files.map( file => typeof file === 'string' ? file : file.path )
-        );
-      }, [] );
-      let buildCss = makeCssBuilder( group.css );
-      watchGlob( paths, () => buildCss( callback ) );
+      group.css.forEach( task => {
+        var paths = task.files.map( file => typeof file === 'string' ? file : file.path );
+        var buildCss = makeCssBuilder( [ task ] );
+        watchGlob( paths, () => buildCss( callback ) );
+      });
     }
 
     if ( group.sass ) {
-      let paths = group.sass.map( x => x.src );
-      let buildSass = makeSassBuilder( group.sass, {
-        continueOnError: true
+      group.sass.forEach( task => {
+        var buildSass = makeSassBuilder( [ task ], {
+          continueOnError: true
+        });
+        watchGlob( task.src, () => buildSass( callback ) );
       });
-      watchGlob( paths, () => buildSass( callback ) );
     }
 
     if ( group.js ) {
-      let concatTasks = group.js.filter( x => !!x.files );
-      let pathsForConcat = concatTasks.reduce( ( paths, task ) => {
-        return paths.concat( task.files );
-      }, [] );
-      let concatJs = makeJsBuilder( concatTasks );
-      watchGlob( pathsForConcat, () => concatJs( callback ) );
+      group.js.forEach( task => {
+        if ( task.files ) {
+          let concatJs = makeJsBuilder( [ task ] );
+          watchGlob( task.files, () => concatJs( callback ) );
+        } else {
+          let { entry, outfile } = task;
+          let options = _.cloneDeep( task );
+          delete options.entry;
+          delete options.outfile;
+          watchify( entry, outfile, options, callback );
+        }
+      });
+    }
 
-      let browserifyTasks = group.js.filter( x => !!x.entry );
-      browserifyTasks.forEach( task => {
-        var { entry, outfile } = task;
-        var options = _.cloneDeep( task );
-        delete options.entry;
-        delete options.outfile;
-        watchify( entry, outfile, options, callback );
+    if ( group.copy ) {
+      Object.keys( group.copy ).forEach( glob => {
+        var dest = group.copy[ glob ];
+        watchGlob( glob, ( path, type ) => {
+          if ( type !== 'unlink' ) {
+            copy({
+              [ path ]: resolveDestinationFromGlob( path, dest, glob )
+            }, callback );
+          }
+        });
+      });
+    }
+
+    if ( group.ejs ) {
+      group.ejs.forEach( task => {
+        watchGlob( task.src, ( path, type ) => {
+          if ( type !== 'unlink' ) {
+            buildEjs(
+              path,
+              resolveDestinationFromGlob( path, task.outdir, task.src ),
+              {
+                continueOnError: true,
+                context: task.context
+              },
+              callback
+            );
+          }
+        });
       });
     }
   }

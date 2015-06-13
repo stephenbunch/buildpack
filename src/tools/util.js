@@ -36,3 +36,15 @@ export function runSequential( tasks, done ) {
     }
   } () );
 };
+
+export function resolveDestinationFromGlob( filename, destination, glob ) {
+  var path = require( 'path' );
+  var minimatch = require( 'minimatch' );
+  if ( !minimatch( filename, glob ) ) {
+    throw new Error( `Filename ${ filename } must match glob ${ glob }.` );
+  }
+  var base = baseFromGlob( glob );
+  var basename = path.basename( filename );
+  var diff = filename.slice( base.length, -basename.length - 1 );
+  return destination + '/' + diff;
+};

@@ -12,6 +12,7 @@ import {
   rewriteUrl as rewriteCssUrl
 } from '../tools/css';
 import { copy } from '../tools/copy';
+import { buildEjs } from '../tools/ejs';
 
 // Targets ____________________________________________________________________
 
@@ -31,6 +32,10 @@ import { copy } from '../tools/copy';
  * @typedef {Object.<String, String>} CopyTarget
  */
 
+/**
+ * @typedef {Array.<EjsTask>} EjsTarget
+ */
+
 
 // Tasks ______________________________________________________________________
 
@@ -48,6 +53,12 @@ import { copy } from '../tools/copy';
 /**
  * @typedef {Object} SassTask
  * @property {String} src A glob pattern as input to the sass compiler.
+ * @property {String} outdir The destination directory.
+ */
+
+/**
+ * @typedef {Object} EjsTask
+ * @property {String} src A glob pattern as input to the ejs compiler.
  * @property {String} outdir The destination directory.
  */
 
@@ -95,6 +106,7 @@ import { copy } from '../tools/copy';
  * @property {CssTarget} [css]
  * @property {SassTarget} [sass]
  * @property {CopyTarget} [copy]
+ * @property {EjsTarget} [ejs]
  */
 
 /**
@@ -107,6 +119,7 @@ export function register( gulp, groups, projectDir ) {
   var cssTasks = [];
   var copyTasks = [];
   var sassTasks = [];
+  var ejsTasks = [];
 
   for ( let groupName in groups ) {
     let group = resolveGroup( groups[ groupName ], projectDir );
@@ -143,6 +156,14 @@ export function register( gulp, groups, projectDir ) {
       groupTasks.push( taskName );
     }
 
+    if ( group.ejs.length > 0 ) {
+      let taskName = `make:${ groupName }:ejs`;
+      let buildEjs = makeEjsBuilder( group.ejs );
+      gulp.task( taskName, buildEjs );
+      ejsTasks.push( taskName );
+      groupTasks.push( taskName );
+    }
+
     if ( groupTasks.length > 0 ) {
       gulp.task( `make:${ groupName }`, groupTasks );
     }
@@ -164,10 +185,15 @@ export function register( gulp, groups, projectDir ) {
     gulp.task( 'make:sass', sassTasks );
   }
 
+  if ( ejsTasks.length > 0 ) {
+    gulp.task( 'make:ejs', ejsTasks );
+  }
+
   var makeTasks = jsTasks
     .concat( cssTasks )
     .concat( copyTasks )
-    .concat( sassTasks );
+    .concat( sassTasks )
+    .concat( ejsTasks );
 
   if ( makeTasks.length > 0 ) {
     gulp.task( 'make', makeTasks );
@@ -206,7 +232,7 @@ export function makeJsBuilder( target ) {
 
 /**
  * @param {SassTarget} target
- * @param {Object} options
+ * @param {Object} [options]
  * @returns {AsyncFunction}
  */
 export function makeSassBuilder( target, options ) {
@@ -217,6 +243,25 @@ export function makeSassBuilder( target, options ) {
       }),
       done
     );
+  };
+};
+
+/**
+ * @param {EjsTarget} target
+ * @param {Object} [options]
+ * @returns {AsyncFunction}
+ */
+export function makeEjsBuilder( target, options ) {
+  var _ = require( 'lodash' );
+  return done => {
+    runConcurrent(
+      target.map( task => {
+        var opts = _.cloneDeep( options || {} );
+        _.extend( opts, options );
+        return done => buildEjs( task.src, task.outdir, opts, done );
+      }),
+      done
+    )
   };
 };
 
@@ -234,12 +279,14 @@ export function resolveGroup( group, projectDir ) {
     js: [],
     css: [],
     sass: [],
-    copy: {}
+    copy: {},
+    ejs: []
   }, group );
   group.js = group.js.map( task => resolveJsTask( task, inputDir, outputDir ) );
   group.css = group.css.map( task => resolveCssTask( task, inputDir, outputDir ) );
   group.sass = group.sass.map( task => resolveSassTask( task, inputDir, outputDir ) );
   group.copy = resolveCopyTarget( group.copy, inputDir, outputDir );
+  group.ejs = group.ejs.map( task => resolveEjsTask( task, inputDir, outputDir ) );
   return group;
 };
 
@@ -298,6 +345,20 @@ export function resolveCopyTarget( target, inputDir, outputDir ) {
  * @return {SassTask}
  */
 export function resolveSassTask( task, inputDir, outputDir ) {
+  var path = require( 'path' );
+  return {
+    src: path.resolve( inputDir, task.src ),
+    outdir: path.resolve( outputDir, task.outdir )
+  };
+};
+
+/**
+ * @param {EjsTask} task
+ * @param {String} inputDir
+ * @param {String} outputDir
+ * @return {EjsTask}
+ */
+export function resolveEjsTask( task, inputDir, outputDir ) {
   var path = require( 'path' );
   return {
     src: path.resolve( inputDir, task.src ),

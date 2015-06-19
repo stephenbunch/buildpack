@@ -100,6 +100,12 @@ import { buildEjs } from '../tools/ejs';
  */
 
 /**
+ * @callback AsyncStreamFunction
+ * @param {Function} [done]
+ * @returns {stream.Readable}
+ */
+
+/**
  * @typedef {Object} BuildGroup
  * @property {String} [baseDir]
  * @property {JsTarget} [js]
@@ -202,7 +208,7 @@ export function register( gulp, groups, projectDir ) {
 
 /**
  * @param {CssTarget} target
- * @returns {AsyncFunction}
+ * @returns {AsyncStreamFunction}
  */
 export function makeCssBuilder( target ) {
   var merge = require( 'merge-stream' );
@@ -232,7 +238,7 @@ export function makeJsBuilder( target ) {
 /**
  * @param {SassTarget} target
  * @param {Object} [options]
- * @returns {AsyncFunction}
+ * @returns {AsyncStreamFunction}
  */
 export function makeSassBuilder( target, options ) {
   var merge = require( 'merge-stream' );

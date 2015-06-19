@@ -230,7 +230,7 @@ export function makeJsBuilder( target ) {
       target.map( task => {
         return done => buildJsTask( task, done );
       }),
-      err => done( err, streams )
+      done
     );
   };
 };

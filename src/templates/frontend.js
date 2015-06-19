@@ -80,9 +80,7 @@ export function register( gulp, options ) {
         ui: {
           port: await getPortAsync()
         },
-        server: {
-          baseDir: path.resolve( projectDir, serve.baseDir )
-        }
+        server: path.resolve( projectDir, serve.baseDir )
       });
 
       var reload = () => browserSync.reload();
@@ -92,7 +90,11 @@ export function register( gulp, options ) {
       }
 
       if ( make ) {
-        watchGroups( resolveGroups( make, projectDir ), reload );
+        watchGroups(
+          resolveGroups( make, projectDir ),
+          reload,
+          stream => stream.pipe( browserSync.stream() )
+        );
       }
     });
   }

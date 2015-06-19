@@ -34,8 +34,9 @@ export function watchGlob( paths, callback ) {
 /**
  * @param {Object.<String, BuildGroup>} groups
  * @param {Function} callback
+ * @param {Function} transform
  */
-export function watchGroups( groups, callback ) {
+export function watchGroups( groups, callback, transform ) {
   var _ = require( 'lodash' );
 
   for ( let groupName in groups ) {
@@ -44,7 +45,14 @@ export function watchGroups( groups, callback ) {
       group.css.forEach( task => {
         var paths = task.files.map( file => typeof file === 'string' ? file : file.path );
         var buildCss = makeCssBuilder( [ task ] );
-        watchGlob( paths, () => buildCss( callback ) );
+        watchGlob( paths, () => {
+          var stream = buildCss();
+          if ( transform ) {
+            stream = transform( stream );
+          } else {
+            stream.on( 'end', callback );
+          }
+        });
       });
     }
 
@@ -53,7 +61,14 @@ export function watchGroups( groups, callback ) {
         var buildSass = makeSassBuilder( [ task ], {
           continueOnError: true
         });
-        watchGlob( task.src, () => buildSass( callback ) );
+        watchGlob( task.src, () => {
+          var stream = buildSass();
+          if ( transform ) {
+            stream = transform( stream );
+          } else {
+            stream.on( 'end', callback );
+          }
+        });
       });
     }
 

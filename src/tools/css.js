@@ -5,7 +5,7 @@ import { baseFromGlob } from './util';
  * @param {String} outdir Destination path.
  * @param {Object} [opts]
  * @param {Boolean} [opts.continueOnError]
- * @param {Function} done
+ * @param {Function} [done]
  * @returns {stream.Readable}
  */
 export function buildSass( sourceGlob, outdir, opts, done ) {
@@ -22,6 +22,8 @@ export function buildSass( sourceGlob, outdir, opts, done ) {
   var autoprefixer = require( 'autoprefixer-core' );
   var filter = require( 'gulp-filter' );
   var path = require( 'path' );
+  var clone = require( 'gulp-clone' );
+  var debug = require( 'gulp-debug' );
 
   var stream = gulp.src( sourceGlob )
     .pipe( filter( file => !/^_/.test( path.basename( file.path ) ) ) )
@@ -36,6 +38,7 @@ export function buildSass( sourceGlob, outdir, opts, done ) {
     stream.on( 'error', err => console.log( err ) );
   }
 
+  var cloneSink = clone.sink();
   return stream
     .pipe(
       postcss([
@@ -44,15 +47,16 @@ export function buildSass( sourceGlob, outdir, opts, done ) {
         })
       ])
     )
-    .pipe( gulp.dest( outdir ) )
+    .pipe( cloneSink )
     .pipe(
       minify({
         keepSpecialComments: 0
       })
     )
     .pipe( rename({ extname: '.min.css' }) )
+    .pipe( cloneSink.tap() )
     .pipe( gulp.dest( outdir ) )
-    .on( 'end', done );
+    .on( 'end', done || ( () => {} ) );
 }
 
 /**
@@ -132,7 +136,7 @@ export function concat( files, outfile, done ) {
 /**
  * @param {Array.<stream.Readable>} streams
  * @param {String} outfile
- * @param {Function} done
+ * @param {Function} [done]
  * @returns {stream.Readable}
  */
 export function concatStreams( streams, outfile, done ) {
@@ -142,19 +146,21 @@ export function concatStreams( streams, outfile, done ) {
   var merge = require( 'merge-stream' );
   var minify = require( 'gulp-minify-css' );
   var rename = require( 'gulp-rename' );
+  var clone = require( 'gulp-clone' );
 
-  var outdir = path.dirname( outfile );
+  var cloneSink = clone.sink();
   return merge.apply( undefined, streams )
     .pipe( sourcemaps.init() )
     .pipe( concat( path.basename( outfile ) ) )
     .pipe( sourcemaps.write() )
-    .pipe( gulp.dest( outdir ) )
+    .pipe( cloneSink )
     .pipe(
       minify({
         keepSpecialComments: 0
       })
     )
     .pipe( rename({ extname: '.min.css' }) )
-    .pipe( gulp.dest( outdir ) )
-    .on( 'end', done );
+    .pipe( cloneSink.tap() )
+    .pipe( gulp.dest( path.dirname( outfile ) ) )
+    .on( 'end', done || ( () => {} ) );
 };

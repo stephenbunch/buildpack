@@ -136,7 +136,7 @@ export function register( gulp, groups, projectDir ) {
     if ( group.css.length > 0 ) {
       let taskName = `make:${ groupName }:css`;
       let buildCss = makeCssBuilder( group.css );
-      gulp.task( taskName, buildCss );
+      gulp.task( taskName, () => buildCss() );
       cssTasks.push( taskName );
       groupTasks.push( taskName );
     }
@@ -144,7 +144,7 @@ export function register( gulp, groups, projectDir ) {
     if ( group.sass.length > 0 ) {
       let taskName = `make:${ groupName }:sass`;
       let buildSass = makeSassBuilder( group.sass );
-      gulp.task( taskName, buildSass );
+      gulp.task( taskName, () => buildSass() );
       sassTasks.push( taskName );
       groupTasks.push( taskName );
     }
@@ -205,13 +205,12 @@ export function register( gulp, groups, projectDir ) {
  * @returns {AsyncFunction}
  */
 export function makeCssBuilder( target ) {
+  var merge = require( 'merge-stream' );
   return done => {
-    runConcurrent(
-      target.map( task => {
-        return done => buildCssTask( task, done );
-      }),
-      done
-    );
+    return merge.apply(
+      undefined,
+      target.map( task => buildCssTask( task ) )
+    ).on( 'end', done || ( () => {} ) );
   };
 };
 
@@ -225,7 +224,7 @@ export function makeJsBuilder( target ) {
       target.map( task => {
         return done => buildJsTask( task, done );
       }),
-      done
+      err => done( err, streams )
     );
   };
 };
@@ -236,13 +235,14 @@ export function makeJsBuilder( target ) {
  * @returns {AsyncFunction}
  */
 export function makeSassBuilder( target, options ) {
+  var merge = require( 'merge-stream' );
   return done => {
-    runConcurrent(
+    return merge.apply(
+      undefined,
       target.map( task => {
-        return done => buildSass( task.src, task.outdir, options, done );
-      }),
-      done
-    );
+        return buildSass( task.src, task.outdir, options );
+      })
+    ).on( 'end', done || ( () => {} ) );
   };
 };
 
@@ -432,9 +432,10 @@ export function buildJsTask( task, done ) {
 /**
  * @param {CssTask} task
  * @param {Function} done
+ * @returns {stream.Readable}
  */
 export function buildCssTask( task, done ) {
-  concatCssStreams(
+  return concatCssStreams(
     task.files.map( file => {
       if ( typeof file === 'string' ) {
         return gulp.src( file );

@@ -57,7 +57,11 @@ export function register( gulp, options ) {
       }
 
       if ( make ) {
-        watchGroups( resolveGroups( make, projectDir ), reload );
+        watchGroups(
+          resolveGroups( make, projectDir ),
+          reload,
+          stream => stream.pipe( browserSync.stream() )
+        );
       }
     });
   }

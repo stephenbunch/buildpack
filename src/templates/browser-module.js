@@ -1,8 +1,15 @@
-import { bundle, browserify } from '../tools/browserify';
+import {
+  bundle,
+  browserify,
+  watchify
+} from '../tools/browserify';
 import { register as registerCommon } from './common';
 
 export function register( gulp, options ) {
   var { projectDir, entry, outfile } = options;
+
+  entry = `${ projectDir }/${ entry }`;
+  outfile = `${ projectDir }/${ outfile }`;
 
   delete options.projectDir;
   delete options.entry;
@@ -10,8 +17,8 @@ export function register( gulp, options ) {
 
   gulp.task( 'make:js', function( done ) {
     bundle(
-      browserify( `${ projectDir }/${ entry }`, options ),
-      `${ projectDir }/${ outfile }`,
+      browserify( entry, options ),
+      outfile,
       done
     );
   });
@@ -25,6 +32,10 @@ export function register( gulp, options ) {
   });
 
   gulp.task( 'clean', [ 'clean:js' ] );
+
+  gulp.task( 'watch', function() {
+    watchify( entry, outfile, options, () => {} );
+  });
 
   registerCommon( gulp, projectDir );
 };

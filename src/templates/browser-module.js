@@ -8,8 +8,6 @@ export function register( gulp, options ) {
   delete options.entry;
   delete options.outfile;
 
-  options.bundleExternal = false;
-
   gulp.task( 'make:js', function( done ) {
     bundle(
       browserify( `${ projectDir }/${ entry }`, options ),

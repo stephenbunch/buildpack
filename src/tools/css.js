@@ -24,9 +24,15 @@ export function buildSass( sourceGlob, outdir, opts, done ) {
   var path = require( 'path' );
   var clone = require( 'gulp-clone' );
   var debug = require( 'gulp-debug' );
+  var cssGlobbing = require( 'gulp-css-globbing' );
 
   var stream = gulp.src( sourceGlob )
     .pipe( filter( file => !/^_/.test( path.basename( file.path ) ) ) )
+    .pipe(
+      cssGlobbing({
+        extensions: [ '.css', '.scss' ]
+      })
+    )
     .pipe(
       sass({
         loadPath: [ baseFromGlob( sourceGlob ) ],

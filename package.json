@@ -1,6 +1,6 @@
 {
   "name": "@stephenbunch/buildpack",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "Contains common tasks for building JS projects.",
   "main": "index.js",
   "scripts": {
@@ -33,6 +33,7 @@
     "gulp-css-globbing": "^0.1.8",
     "gulp-debug": "^2.0.1",
     "gulp-ejs": "^1.1.0",
+    "gulp-ejsmin": "0.0.1",
     "gulp-filter": "^2.0.2",
     "gulp-minify-css": "^1.1.1",
     "gulp-postcss": "^5.1.6",

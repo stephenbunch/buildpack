@@ -248,7 +248,10 @@ export function makeSassBuilder( target, options ) {
       undefined,
       target.map( task => {
         var opts = _.cloneDeep( options || {} );
-        opts.includePaths = task.includePaths;
+        var taskOpts = _.cloneDeep( task );
+        delete taskOpts.src;
+        delete taskOpts.outdir;
+        _.extend( opts, taskOpts );
         return buildSass( task.src, task.outdir, opts );
       })
     ).on( 'end', done || ( () => {} ) );
@@ -266,7 +269,10 @@ export function makeEjsBuilder( target, options ) {
     runConcurrent(
       target.map( task => {
         var opts = _.cloneDeep( options || {} );
-        _.extend( opts, options );
+        var taskOpts = _.cloneDeep( task );
+        delete taskOpts.src;
+        delete taskOpts.outdir;
+        _.extend( opts, taskOpts );
         return done => buildEjs( task.src, task.outdir, opts, done );
       }),
       done
@@ -371,10 +377,11 @@ export function resolveSassTask( task, inputDir, outputDir ) {
  */
 export function resolveEjsTask( task, inputDir, outputDir ) {
   var path = require( 'path' );
-  return {
-    src: path.resolve( inputDir, task.src ),
-    outdir: path.resolve( outputDir, task.outdir )
-  };
+  var _ = require( 'lodash' );
+  task = _.cloneDeep( task );
+  task.src = path.resolve( inputDir, task.src );
+  task.outdir = path.resolve( outputDir, task.outdir );
+  return task;
 };
 
 /**

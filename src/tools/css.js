@@ -36,6 +36,7 @@ export function buildSass( sourceGlob, outdir, opts, done ) {
     .pipe(
       sass({
         loadPath: [ baseFromGlob( sourceGlob ) ],
+        includePaths: opts && opts.includePaths || [],
         errLogToConsole: true
       })
     );

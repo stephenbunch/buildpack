@@ -242,11 +242,14 @@ export function makeJsBuilder( target ) {
  */
 export function makeSassBuilder( target, options ) {
   var merge = require( 'merge-stream' );
+  var _ = require( 'lodash' );
   return done => {
     return merge.apply(
       undefined,
       target.map( task => {
-        return buildSass( task.src, task.outdir, options );
+        var opts = _.cloneDeep( options || {} );
+        opts.includePaths = task.includePaths;
+        return buildSass( task.src, task.outdir, opts );
       })
     ).on( 'end', done || ( () => {} ) );
   };
@@ -354,7 +357,9 @@ export function resolveSassTask( task, inputDir, outputDir ) {
   var path = require( 'path' );
   return {
     src: path.resolve( inputDir, task.src ),
-    outdir: path.resolve( outputDir, task.outdir )
+    outdir: path.resolve( outputDir, task.outdir ),
+    includePaths: ( task.includePaths || [] )
+      .map( x => path.resolve( inputDir, x ) )
   };
 };
 

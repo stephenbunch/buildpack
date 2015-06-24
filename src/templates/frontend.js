@@ -99,5 +99,11 @@ export function register( gulp, options ) {
     });
   }
 
+  if ( make ) {
+    gulp.task( 'watch', function() {
+      watchGroups( resolveGroups( make, projectDir ), () => {} );
+    });
+  }
+
   registerCommon( gulp, projectDir );
 };

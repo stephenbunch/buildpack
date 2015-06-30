@@ -8,16 +8,23 @@ import { watchGlob } from '../tools/watch';
 import { watchify } from '../tools/browserify';
 
 export function register( gulp, options ) {
-  var { projectDir, platforms } = options;
+  var { projectDir, platforms, outfile } = options;
   delete options.projectDir;
   delete options.test;
+  delete options.outfile;
 
   platforms = platforms || [ 'browser', 'node' ];
 
   const specFiles = `${ projectDir }/test/**/*.spec.js`;
   const sourceFiles = `${ projectDir }/src/**/*`;
   const entryFile = `${ projectDir }/src/index.js`;
-  const outFile = `${ projectDir }/dist/${ options.standalone }.js`;
+
+  var outFile;
+  if ( outfile ) {
+    outFile = `${ projectDir }/` + outfile;
+  } else {
+    outFile = `${ projectDir }/dist/${ options.standalone }.js`;
+  }
 
   var makeJs = done => {
     babel( sourceFiles, `${ projectDir }/lib`, done );

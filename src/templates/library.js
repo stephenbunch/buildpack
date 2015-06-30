@@ -8,8 +8,11 @@ import { watchGlob } from '../tools/watch';
 import { watchify } from '../tools/browserify';
 
 export function register( gulp, options ) {
-  var { projectDir } = options;
+  var { projectDir, platforms } = options;
   delete options.projectDir;
+  delete options.test;
+
+  platforms = platforms || [ 'browser', 'node' ];
 
   const specFiles = `${ projectDir }/test/**/*.spec.js`;
   const sourceFiles = `${ projectDir }/src/**/*`;
@@ -39,7 +42,7 @@ export function register( gulp, options ) {
       specs: specFiles,
 
       // Somehow, running mocha tests first can screw up the karam environment.
-      platforms: [ 'browser', 'node' ]
+      platforms: platforms
     }
   });
 

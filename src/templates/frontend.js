@@ -10,6 +10,7 @@ import { makeCleanFunction } from '../tools/clean';
 import { watchify } from '../tools/browserify';
 import { Promise } from 'bluebird';
 import { register as registerCommon } from './common';
+import gutil from 'gulp-util';
 
 // Example ____________________________________________________________________
 
@@ -101,7 +102,9 @@ export function register( gulp, options ) {
 
   if ( make ) {
     gulp.task( 'watch', function() {
-      watchGroups( resolveGroups( make, projectDir ), () => {} );
+      watchGroups( resolveGroups( make, projectDir ), () => {
+        gutil.log( 'build succeeded' );
+      });
     });
   }
 

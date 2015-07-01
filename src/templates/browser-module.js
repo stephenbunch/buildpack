@@ -2,6 +2,7 @@ import { watchify } from '../tools/browserify';
 import { buildJsTask } from '../tools/make';
 import { register as registerCommon } from './common';
 import _ from 'lodash';
+import gutil from 'gulp-util';
 
 export function register( gulp, options ) {
   var { projectDir, entry, outfile } = options;
@@ -31,7 +32,9 @@ export function register( gulp, options ) {
   gulp.task( 'clean', [ 'clean:js' ] );
 
   gulp.task( 'watch', function() {
-    watchify( entry, outfile, options, () => {} );
+    watchify( entry, outfile, options, () => {
+      gutil.log( 'build succeeded' );
+    });
   });
 
   registerCommon( gulp, projectDir );

@@ -1,9 +1,7 @@
-import {
-  bundle,
-  browserify,
-  watchify
-} from '../tools/browserify';
+import { watchify } from '../tools/browserify';
+import { buildJsTask } from '../tools/make';
 import { register as registerCommon } from './common';
+import _ from 'lodash';
 
 export function register( gulp, options ) {
   var { projectDir, entry, outfile } = options;
@@ -16,11 +14,10 @@ export function register( gulp, options ) {
   delete options.outfile;
 
   gulp.task( 'make:js', function( done ) {
-    bundle(
-      browserify( entry, options ),
-      outfile,
-      done
-    );
+    var task = _.cloneDeep( options );
+    task.entry = entry;
+    task.outfile = outfile;
+    buildJsTask( task, done );
   });
 
   gulp.task( 'make', [ 'make:js' ] );

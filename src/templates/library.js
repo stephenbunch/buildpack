@@ -6,6 +6,7 @@ import { serve as serveKarma } from '../tools/karma';
 import { register as registerCommon } from './common';
 import { watchGlob } from '../tools/watch';
 import { watchify } from '../tools/browserify';
+import gutil from 'gulp-util';
 
 export function register( gulp, options ) {
   var { projectDir, platforms, outfile } = options;
@@ -63,16 +64,26 @@ export function register( gulp, options ) {
 
   gulp.task( 'clean', [ 'clean:js' ] );
 
-  gulp.task( 'serve', function( done ) {
+  var watch = callback => {
+    watchGlob( sourceFiles, () => {
+      makeJs( callback );
+    });
+    if ( options.standalone ) {
+      watchify( entryFile, outFile, options, callback );
+    }
+  };
+
+  gulp.task( 'serve', function() {
     var karma = serveKarma( specFiles, {
       autoWatch: true
     });
-    watchGlob( sourceFiles, () => {
-      makeJs( karma.reload );
+    watch( karma.reload );
+  });
+
+  gulp.task( 'watch', function() {
+    watch( () => {
+      gutil.log( 'build succeeded' );
     });
-    if ( options.standalone ) {
-      watchify( entryFile, outFile, options, karma.reload );
-    }
   });
 
   registerCommon( gulp, projectDir );

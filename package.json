@@ -1,6 +1,6 @@
 {
   "name": "@stephenbunch/buildpack",
-  "version": "0.2.13",
+  "version": "0.2.14",
   "description": "Contains common tasks for building JS projects.",
   "main": "index.js",
   "scripts": {

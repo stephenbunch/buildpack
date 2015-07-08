@@ -6,11 +6,11 @@ import {
 } from '../tools/browserify';
 import { concat as concatJs } from '../tools/js';
 import {
-  buildSass,
   concatStreams as concatCssStreams,
   rewriteUrlPrefix as rewriteCssUrlPrefix,
   rewriteUrl as rewriteCssUrl
 } from '../tools/css';
+import { buildSass } from '../tools/sass';
 import { copy } from '../tools/copy';
 import { buildEjs } from '../tools/ejs';
 
@@ -361,12 +361,13 @@ export function resolveCopyTarget( target, inputDir, outputDir ) {
  */
 export function resolveSassTask( task, inputDir, outputDir ) {
   var path = require( 'path' );
-  return {
-    src: path.resolve( inputDir, task.src ),
-    outdir: path.resolve( outputDir, task.outdir ),
-    includePaths: ( task.includePaths || [] )
-      .map( x => path.resolve( inputDir, x ) )
-  };
+  var _ = require( 'lodash' );
+  task = _.cloneDeep( task );
+  task.src = path.resolve( inputDir, task.src );
+  task.outdir = path.resolve( outputDir, task.outdir );
+  task.includePaths = ( task.includePaths || [] )
+    .map( x => path.resolve( inputDir, x ) );
+  return task;
 };
 
 /**

@@ -1,11 +1,11 @@
 import { register as registerTestTasks } from '../tools/test';
 import { runConcurrent } from '../tools/util';
-import { bundle, browserify } from '../tools/browserify';
 import { babel } from '../tools/babel';
 import { serve as serveKarma } from '../tools/karma';
 import { register as registerCommon } from './common';
 import { watchGlob } from '../tools/watch';
 import { watchify } from '../tools/browserify';
+import { buildJsTask } from '../tools/make';
 import gutil from 'gulp-util';
 
 export function register( gulp, options ) {
@@ -33,12 +33,11 @@ export function register( gulp, options ) {
 
   gulp.task( 'make:js', function( done ) {
     var _ = require( 'lodash' );
+    var task = _.cloneDeep( options );
+    task.entry = entryFile;
+    task.outfile = outFile;
     var makeBundle = done => {
-      if ( options.standalone ) {
-        bundle( browserify( entryFile, options ), outFile, done );
-      } else {
-        done();
-      }
+      buildJsTask( task, done );
     };
     runConcurrent( [ makeBundle, makeJs ], done );
   });

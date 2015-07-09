@@ -48,3 +48,12 @@ export function resolveDestinationFromGlob( filename, destination, glob ) {
   var diff = filename.slice( base.length, -basename.length - 1 );
   return destination + '/' + diff;
 };
+
+export function versionString( version ) {
+  var parts = version.split( '.' );
+  if ( parts[0] === '0' ) {
+    return 'v1beta' + parts[1];
+  } else {
+    return 'v' + parts[0];
+  }
+};

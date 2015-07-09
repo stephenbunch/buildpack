@@ -86,7 +86,6 @@ export function bundle( browserify, outfile, opts, done ) {
  * @param {String} outfile
  * @param {Object} [options]
  * @param {Function} callback
- * @returns {Function}
  */
 export function watchify( entryFile, outfile, options, callback ) {
   if ( typeof options === 'function' ) {
@@ -127,8 +126,13 @@ export function watchify( entryFile, outfile, options, callback ) {
 
   makeJs();
 
-  return () => {
-    b.close();
-    watcher.close();
+  return {
+    build: () => {
+      b.invalidate( entryFile );
+    },
+    close: () => {
+      b.close();
+      watcher.close();
+    }
   };
 };

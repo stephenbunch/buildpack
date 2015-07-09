@@ -9,10 +9,11 @@ import { buildJsTask } from '../tools/make';
 import gutil from 'gulp-util';
 
 export function register( gulp, options ) {
-  var { projectDir, platforms, outfile } = options;
+  var { projectDir, platforms, outfile, watch } = options;
   delete options.projectDir;
   delete options.test;
   delete options.outfile;
+  delete options.watch;
 
   platforms = platforms || [ 'browser', 'node' ];
 
@@ -63,26 +64,39 @@ export function register( gulp, options ) {
 
   gulp.task( 'clean', [ 'clean:js' ] );
 
-  var watch = callback => {
+  var beginWatch = callback => {
     watchGlob( sourceFiles, () => {
       makeJs( callback );
     });
+    var bundle;
     if ( options.standalone ) {
-      watchify( entryFile, outFile, options, callback );
+      bundle = watchify( entryFile, outFile, options, callback );
     }
+    return () => {
+      makeJs( callback );
+      if ( bundle ) {
+        bundle.build();
+      }
+    };
   };
 
   gulp.task( 'serve', function() {
     var karma = serveKarma( specFiles, {
       autoWatch: true
     });
-    watch( karma.reload );
+    beginWatch( karma.reload );
   });
 
   gulp.task( 'watch', function() {
-    watch( () => {
+    var build = beginWatch( () => {
       gutil.log( 'build succeeded' );
     });
+
+    // This is completely unrelated, but I needed a way to auto-refresh
+    // front-ends that rely on a bootstrap library.
+    if ( watch ) {
+      watchGlob( watch, build );
+    }
   });
 
   registerCommon( gulp, projectDir );

@@ -75,13 +75,34 @@ export function register( gulp, options ) {
       var portfinder = require( 'portfinder' );
       portfinder.basePort = 3000;
       var getPortAsync = Promise.promisify( portfinder.getPort );
+      var hapi = require( 'hapi' );
+
+      var server = new hapi.Server();
+      var serverPort = await getPortAsync();
+      server.connection({
+        port: serverPort,
+        routes: {
+          cors: true
+        }
+      });
+      server.route({
+        method: 'GET',
+        path: '/{param*}',
+        handler: {
+          directory: {
+            path: path.resolve( projectDir, serve.baseDir )
+          }
+        }
+      });
+      server.startAsync = Promise.promisify( server.start );
+      await server.startAsync();
 
       browserSync.init({
         port: await getPortAsync(),
         ui: {
           port: await getPortAsync()
         },
-        server: path.resolve( projectDir, serve.baseDir )
+        proxy: `localhost:${ serverPort }`
       });
 
       var reload = () => browserSync.reload();

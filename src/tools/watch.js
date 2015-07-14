@@ -74,7 +74,11 @@ export function watchGroups( groups, callback, transform ) {
         var buildSass = makeSassBuilder( [ task ], {
           continueOnError: true
         });
-        watchGlob( task.src, () => {
+        var src = [ task.src ];
+        if ( task.includePaths ) {
+          src = src.concat( task.includePaths.map( x => x + '/**/*.scss' ) );
+        }
+        watchGlob( src, () => {
           var stream = buildSass();
           if ( transform ) {
             stream = transform( stream );

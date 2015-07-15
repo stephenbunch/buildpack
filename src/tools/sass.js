@@ -26,7 +26,7 @@ export function buildSass( sourceGlob, outdir, opts, done ) {
   var debug = require( 'gulp-debug' );
   var cssGlobbing = require( 'gulp-css-globbing' );
   var rework = require( 'gulp-rework' );
-  var reworkNamespace = require( 'rework-namespace-css' );
+  var walk = require( 'rework-walk' );
 
   var stream = gulp.src( sourceGlob )
     .pipe( filter( file => !/^_/.test( path.basename( file.path ) ) ) )
@@ -46,11 +46,25 @@ export function buildSass( sourceGlob, outdir, opts, done ) {
   if ( opts ) {
     if ( opts.namespace ) {
       stream = stream.pipe(
-        rework(
-          reworkNamespace({
-            class: opts.namespace
+        rework( style => {
+          walk( style, ( rule, node ) => {
+            // Don't touch keyframes or font-face
+      			if ( !rule.selectors || rule.selectors.toString().indexOf( '@' ) >= 0 ) {
+      				return rule;
+            }
+            rule.selectors = rule.selectors.map( selector => {
+              return selector.split( '.' ).map( className => {
+                if ( !className ) {
+                  return className;
+                }
+                if ( opts.namespaceExclude && opts.namespaceExclude.test( className ) ) {
+                  return className;
+                }
+                return opts.namespace + className;
+              }).join( '.' );
+            });
           })
-        )
+        })
       );
     }
     if ( opts.continueOnError ) {
@@ -77,4 +91,4 @@ export function buildSass( sourceGlob, outdir, opts, done ) {
     .pipe( cloneSink.tap() )
     .pipe( gulp.dest( outdir ) )
     .on( 'end', done || ( () => {} ) );
-}
+};

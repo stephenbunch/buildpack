@@ -2,17 +2,19 @@ import { baseFromGlob } from './util';
 
 /**
  * @param {String} sourceGlob Source glob.
- * @param {String} outdir Destination path.
+ * @param {String} outfile Destination path.
  * @param {Object} [opts]
  * @param {Boolean} [opts.continueOnError]
  * @param {Function} [done]
  * @returns {stream.Readable}
  */
-export function buildSass( sourceGlob, outdir, opts, done ) {
+export function buildSass( sourceGlob, outfile, opts, done ) {
   if ( typeof opts === 'function' ) {
     done = opts;
     opts = {};
   }
+  opts = opts || {};
+  opts.prepend = opts.prepend || [];
 
   var gulp = require( 'gulp' );
   var sass = require( 'gulp-sass' );
@@ -27,9 +29,15 @@ export function buildSass( sourceGlob, outdir, opts, done ) {
   var cssGlobbing = require( 'gulp-css-globbing' );
   var rework = require( 'gulp-rework' );
   var walk = require( 'rework-walk' );
+  var concat = require( 'gulp-concat' );
 
-  var stream = gulp.src( sourceGlob )
+  var prependFilter = filter( [ '*' ].concat(
+    opts.prepend.map( x => '!' + path.basename( x ) )
+  ) );
+
+  var stream = gulp.src( opts.prepend.concat([ sourceGlob ]) )
     .pipe( filter( file => !/^_/.test( path.basename( file.path ) ) ) )
+    .pipe( prependFilter )
     .pipe(
       cssGlobbing({
         extensions: [ '.css', '.scss' ]
@@ -38,38 +46,37 @@ export function buildSass( sourceGlob, outdir, opts, done ) {
     .pipe(
       sass({
         loadPath: [ baseFromGlob( sourceGlob ) ],
-        includePaths: opts && opts.includePaths || [],
+        includePaths: opts.includePaths || [],
         errLogToConsole: true
       })
     );
 
-  if ( opts ) {
-    if ( opts.namespace ) {
-      stream = stream.pipe(
-        rework( style => {
-          walk( style, ( rule, node ) => {
-            // Don't touch keyframes or font-face
-      			if ( !rule.selectors || rule.selectors.toString().indexOf( '@' ) >= 0 ) {
-      				return rule;
-            }
-            rule.selectors = rule.selectors.map( selector => {
-              return selector.split( '.' ).map( className => {
-                if ( !className ) {
-                  return className;
-                }
-                if ( opts.namespaceExclude && opts.namespaceExclude.test( className ) ) {
-                  return className;
-                }
-                return opts.namespace + className;
-              }).join( '.' );
-            });
-          })
+  if ( opts.namespace ) {
+    stream = stream.pipe(
+      rework( style => {
+        walk( style, ( rule, node ) => {
+          // Don't touch keyframes or font-face
+    			if ( !rule.selectors || rule.selectors.toString().indexOf( '@' ) >= 0 ) {
+    				return rule;
+          }
+          rule.selectors = rule.selectors.map( selector => {
+            return selector.split( '.' ).map( className => {
+              if ( !className ) {
+                return className;
+              }
+              if ( opts.namespaceExclude && opts.namespaceExclude.test( className ) ) {
+                return className;
+              }
+              return opts.namespace + className;
+            }).join( '.' );
+          });
         })
-      );
-    }
-    if ( opts.continueOnError ) {
-      stream.on( 'error', err => console.log( err ) );
-    }
+      })
+    );
+  }
+
+  if ( opts.continueOnError ) {
+    stream.on( 'error', err => console.log( err ) );
   }
 
   var cloneSink = clone.sink();
@@ -81,6 +88,8 @@ export function buildSass( sourceGlob, outdir, opts, done ) {
         })
       ])
     )
+    .pipe( prependFilter.restore() )
+    .pipe( concat( path.basename( outfile ) ) )
     .pipe( cloneSink )
     .pipe(
       minify({
@@ -89,6 +98,6 @@ export function buildSass( sourceGlob, outdir, opts, done ) {
     )
     .pipe( rename({ extname: '.min.css' }) )
     .pipe( cloneSink.tap() )
-    .pipe( gulp.dest( outdir ) )
+    .pipe( gulp.dest( path.dirname( outfile ) ) )
     .on( 'end', done || ( () => {} ) );
 };

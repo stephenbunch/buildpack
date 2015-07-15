@@ -53,7 +53,7 @@ import { buildEjs } from '../tools/ejs';
 /**
  * @typedef {Object} SassTask
  * @property {String} src A glob pattern as input to the sass compiler.
- * @property {String} outdir The destination directory.
+ * @property {String} outfile The destination directory.
  */
 
 /**
@@ -250,9 +250,9 @@ export function makeSassBuilder( target, options ) {
         var opts = _.cloneDeep( options || {} );
         var taskOpts = _.cloneDeep( task );
         delete taskOpts.src;
-        delete taskOpts.outdir;
+        delete taskOpts.outfile;
         _.extend( opts, taskOpts );
-        return buildSass( task.src, task.outdir, opts );
+        return buildSass( task.src, task.outfile, opts );
       })
     ).on( 'end', done || ( () => {} ) );
   };
@@ -364,8 +364,10 @@ export function resolveSassTask( task, inputDir, outputDir ) {
   var _ = require( 'lodash' );
   task = _.cloneDeep( task );
   task.src = path.resolve( inputDir, task.src );
-  task.outdir = path.resolve( outputDir, task.outdir );
+  task.outfile = path.resolve( outputDir, task.outfile );
   task.includePaths = ( task.includePaths || [] )
+    .map( x => path.resolve( inputDir, x ) );
+  task.prepend = ( task.prepend || [] )
     .map( x => path.resolve( inputDir, x ) );
   return task;
 };

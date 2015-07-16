@@ -334,6 +334,8 @@ export function resolveJsTask( task, inputDir, outputDir ) {
   } else {
     task.files = task.files.map( x => path.resolve( inputDir, x ) );
   }
+  task.noParse = ( task.noParse || [] )
+    .map( x => path.resolve( inputDir, x ) );
   return task;
 };
 

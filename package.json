@@ -1,6 +1,6 @@
 {
   "name": "@stephenbunch/buildpack",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A library for building stuff.",
   "main": "index.js",
   "scripts": {

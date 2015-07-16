@@ -38,7 +38,10 @@ export function browserify( entryFile, options ) {
   }
 
   if ( options.uglify ) {
-    bundle = bundle.transform( require.resolve( 'uglifyify' ) );
+    bundle = bundle.transform({
+      global: true,
+      ignore: options.noParse || [],
+    }, require.resolve( 'uglifyify' ) );
   }
 
   if ( options.transform ) {

@@ -13,6 +13,7 @@ import {
 import { buildSass } from '../tools/sass';
 import { copy } from '../tools/copy';
 import { buildEjs } from '../tools/ejs';
+import mergeStreams from '../tools/mergeStreams';
 
 // Targets ____________________________________________________________________
 
@@ -211,10 +212,8 @@ export function register( gulp, groups, projectDir ) {
  * @returns {AsyncStreamFunction}
  */
 export function makeCssBuilder( target ) {
-  var merge = require( 'merge-stream' );
   return done => {
-    return merge.apply(
-      undefined,
+    return mergeStreams(
       target.map( task => buildCssTask( task ) )
     ).on( 'end', done || ( () => {} ) );
   };
@@ -241,11 +240,9 @@ export function makeJsBuilder( target ) {
  * @returns {AsyncStreamFunction}
  */
 export function makeSassBuilder( target, options ) {
-  var merge = require( 'merge-stream' );
   var _ = require( 'lodash' );
   return done => {
-    return merge.apply(
-      undefined,
+    return mergeStreams(
       target.map( task => {
         var opts = _.cloneDeep( options || {} );
         var taskOpts = _.cloneDeep( task );

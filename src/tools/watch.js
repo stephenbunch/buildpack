@@ -50,61 +50,18 @@ export function watchGlob( paths, callback ) {
  * @param {Function} transform
  */
 export function watchGroups( groups, callback, transform ) {
-  var _ = require( 'lodash' );
-
   for ( let groupName in groups ) {
     let group = groups[ groupName ];
     if ( group.css ) {
-      group.css.forEach( task => {
-        var paths = task.files.map( file => typeof file === 'string' ? file : file.path );
-        var buildCss = makeCssBuilder( [ task ] );
-        watchGlob( paths, () => {
-          var stream = buildCss();
-          if ( transform ) {
-            stream = transform( stream );
-          } else {
-            stream.on( 'end', callback );
-          }
-        });
-      });
+      group.css.forEach( task => watchCssTask( task, callback, transform ) );
     }
 
     if ( group.sass ) {
-      group.sass.forEach( task => {
-        var buildSass = makeSassBuilder( [ task ], {
-          continueOnError: true
-        });
-        var src = [ task.src ];
-        if ( task.includePaths ) {
-          src = src.concat( task.includePaths.map( x => x + '/**/*.scss' ) );
-        }
-        if ( task.prepend ) {
-          src = src.concat( task.prepend );
-        }
-        watchGlob( src, () => {
-          var stream = buildSass();
-          if ( transform ) {
-            stream = transform( stream );
-          } else {
-            stream.on( 'end', callback );
-          }
-        });
-      });
+      group.sass.forEach( task => watchSassTask( task, callback, transform ) );
     }
 
     if ( group.js ) {
-      group.js.forEach( task => {
-        if ( task.files ) {
-          let concatJs = makeJsBuilder( [ task ] );
-          watchGlob( task.files, () => concatJs( callback ) );
-        } else {
-          let { entry, outfile } = task;
-          let options = _.cloneDeep( task );
-          delete options.entry;
-          delete options.outfile;
-          watchify( entry, outfile, options, callback );
-        }
-      });
+      group.js.forEach( task => watchJsTask( task, callback ) );
     }
 
     if ( group.copy ) {
@@ -121,21 +78,88 @@ export function watchGroups( groups, callback, transform ) {
     }
 
     if ( group.ejs ) {
-      group.ejs.forEach( task => {
-        watchGlob( task.src, ( path, type ) => {
-          if ( type !== 'unlink' ) {
-            buildEjs(
-              path,
-              resolveDestinationFromGlob( path, task.outdir, task.src ),
-              {
-                continueOnError: true,
-                context: task.context
-              },
-              callback
-            );
-          }
-        });
-      });
+      group.ejs.forEach( task => watchEjsTask( task, callback ) );
     }
   }
 };
+
+function watchCssTask( task, callback, transform ) {
+  var paths = task.files.map( file => typeof file === 'string' ? file : file.path );
+  var buildCss = makeCssBuilder( [ task ] );
+  watchGlob( paths, () => {
+    var stream = buildCss();
+    if ( transform ) {
+      stream = transform( stream );
+    } else {
+      stream.on( 'end', callback );
+    }
+  });
+}
+
+function watchSassTask( task, callback, transform ) {
+  var buildSass = makeSassBuilder( [ task ], {
+    continueOnError: true
+  });
+  var src = [ task.src ];
+  if ( task.includePaths ) {
+    src = src.concat( task.includePaths.map( x => x + '/**/*.scss' ) );
+  }
+  if ( task.prepend ) {
+    src = src.concat( task.prepend );
+  }
+  watchGlob( src, () => {
+    var stream = buildSass();
+    if ( transform ) {
+      stream = transform( stream );
+    } else {
+      stream.on( 'end', callback );
+    }
+  });
+}
+
+function watchJsTask( task, callback ) {
+  var _ = require( 'lodash' );
+  var path = require( 'path' );
+  if ( task.files ) {
+    let concatJs = makeJsBuilder( [ task ] );
+    watchGlob( task.files, () => concatJs( callback ) );
+  } else {
+    let { entry, outfile } = task;
+    let options = _.cloneDeep( task );
+    delete options.entry;
+    delete options.outfile;
+    watchify( entry, outfile, options, callback );
+
+    // So for some reason, if I run both watchifies at the same time, it crashes
+    // in the sourcemaps module as soon as a rebuild is triggered. Also, if I
+    // run the minified watchify by itself, it builds fine, but the task
+    // watching the minified file doesn't register a change and the browser
+    // never refreshes. wtf...
+
+    // let minOptions = _.cloneDeep( options );
+    // _.extend( minOptions, {
+    //   debug: false,
+    //   uglify: true
+    // });
+    // let minOutfile =
+    //   path.dirname( outfile ) + '/' +
+    //   path.basename( outfile, '.js' ) + '.min.js';
+    // watchify( entry, minOutfile, minOptions, callback );
+  }
+}
+
+function watchEjsTask( task, callback ) {
+  watchGlob( task.src, ( path, type ) => {
+    if ( type !== 'unlink' ) {
+      buildEjs(
+        path,
+        resolveDestinationFromGlob( path, task.outdir, task.src ),
+        {
+          continueOnError: true,
+          context: task.context
+        },
+        callback
+      );
+    }
+  });
+}

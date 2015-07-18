@@ -53,7 +53,7 @@ import mergeStreams from '../tools/mergeStreams';
 
 /**
  * @typedef {Object} SassTask
- * @property {String} src A glob pattern as input to the sass compiler.
+ * @property {String} entry A glob pattern as input to the sass compiler.
  * @property {String} outfile The destination directory.
  */
 
@@ -246,10 +246,10 @@ export function makeSassBuilder( target, options ) {
       target.map( task => {
         var opts = _.cloneDeep( options || {} );
         var taskOpts = _.cloneDeep( task );
-        delete taskOpts.src;
+        delete taskOpts.entry;
         delete taskOpts.outfile;
         _.extend( opts, taskOpts );
-        return buildSass( task.src, task.outfile, opts );
+        return buildSass( task.entry, task.outfile, opts );
       })
     ).on( 'end', done || ( () => {} ) );
   };
@@ -362,7 +362,7 @@ export function resolveSassTask( task, inputDir, outputDir ) {
   var path = require( 'path' );
   var _ = require( 'lodash' );
   task = _.cloneDeep( task );
-  task.src = path.resolve( inputDir, task.src );
+  task.entry = path.resolve( inputDir, task.entry );
   task.outfile = path.resolve( outputDir, task.outfile );
   task.includePaths = ( task.includePaths || [] )
     .map( x => path.resolve( inputDir, x ) );

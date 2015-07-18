@@ -1,14 +1,14 @@
 import { baseFromGlob } from './util';
 
 /**
- * @param {String} sourceGlob Source glob.
+ * @param {String} entry Entry file.
  * @param {String} outfile Destination path.
  * @param {Object} [opts]
  * @param {Boolean} [opts.continueOnError]
  * @param {Function} [done]
  * @returns {stream.Readable}
  */
-export function buildSass( sourceGlob, outfile, opts, done ) {
+export function buildSass( entry, outfile, opts, done ) {
   if ( typeof opts === 'function' ) {
     done = opts;
     opts = {};
@@ -35,17 +35,16 @@ export function buildSass( sourceGlob, outfile, opts, done ) {
     opts.prepend.map( x => '!' + path.basename( x ) )
   ) );
 
-  var stream = gulp.src( opts.prepend.concat([ sourceGlob ]) )
-    .pipe( filter( file => !/^_/.test( path.basename( file.path ) ) ) )
+  var stream = gulp.src( opts.prepend.concat([ entry ]) )
     .pipe( prependFilter )
     .pipe(
       cssGlobbing({
-        extensions: [ '.css', '.scss' ]
+        extensions: [ '.scss' ]
       })
     )
     .pipe(
       sass({
-        loadPath: [ baseFromGlob( sourceGlob ) ],
+        loadPath: [ path.dirname( entry ) ],
         includePaths: opts.includePaths || [],
         errLogToConsole: true
       })

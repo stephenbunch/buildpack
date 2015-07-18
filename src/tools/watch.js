@@ -71,7 +71,15 @@ export function watchGroups( groups, callback, transform ) {
           if ( type !== 'unlink' ) {
             copy({
               [ path ]: resolveDestinationFromGlob( path, dest, glob )
-            }, callback );
+            }, () => {
+              // Don't call back for css files. Those should be refreshed
+              // using injection. Ideally, this logic should probably be near
+              // the code where the browser refresh is triggered rather than
+              // buried in here.
+              if ( !path.endsWith( '.css' ) ) {
+                callback();
+              }
+            });
           }
         });
       });
@@ -97,10 +105,11 @@ function watchCssTask( task, callback, transform ) {
 }
 
 function watchSassTask( task, callback, transform ) {
+  var path = require( 'path' );
   var buildSass = makeSassBuilder( [ task ], {
     continueOnError: true
   });
-  var src = [ task.src ];
+  var src = [ path.dirname( task.entry ) + '/**/*.scss' ];
   if ( task.includePaths ) {
     src = src.concat( task.includePaths.map( x => x + '/**/*.scss' ) );
   }

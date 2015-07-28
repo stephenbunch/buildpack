@@ -7,6 +7,7 @@ import { watchify } from '../tools/browserify';
 import { copy } from '../tools/copy';
 import { resolveDestinationFromGlob } from '../tools/util';
 import { buildEjs } from '../tools/ejs';
+import gulp from 'gulp';
 
 /**
  * @param {String|Array.<String>} paths
@@ -66,20 +67,16 @@ export function watchGroups( groups, callback, transform ) {
 
     if ( group.copy ) {
       Object.keys( group.copy ).forEach( glob => {
-        var dest = group.copy[ glob ];
+        var destDir = group.copy[ glob ];
         watchGlob( glob, ( path, type ) => {
           if ( type !== 'unlink' ) {
-            copy({
-              [ path ]: resolveDestinationFromGlob( path, dest, glob )
-            }, () => {
-              // Don't call back for css files. Those should be refreshed
-              // using injection. Ideally, this logic should probably be near
-              // the code where the browser refresh is triggered rather than
-              // buried in here.
-              if ( !path.endsWith( '.css' ) ) {
-                callback();
-              }
-            });
+            let destPath = resolveDestinationFromGlob( path, destDir, glob );
+            if ( path.endsWith( '.css' ) ) {
+              console.log( destPath );
+              transform( gulp.src( path ).pipe( gulp.dest( destPath ) ) );
+            } else {
+              gulp.src( path ).pipe( gulp.dest( destPath ) ).on( 'end', callback );
+            }
           }
         });
       });

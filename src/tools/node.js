@@ -41,9 +41,7 @@ export function start( entryFile, opts, callback ) {
   }
   var fork = require( 'child_process' ).fork;
   var app = fork( entryFile, opts.appArgs || [], {
-    execArgv: ( opts.nodeArgs || [] ).concat([
-      '--harmony'
-    ])
+    execArgv: opts.nodeArgs || []
   });
   app.on( 'message', function( message ) {
     try {

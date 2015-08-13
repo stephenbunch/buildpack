@@ -57,6 +57,12 @@ export function babel( sourceGlob, outdir, opts, done ) {
     .pipe( babel( defaultOptions( baseFromGlob( sourceGlob ) ) ) );
   if ( opts && opts.continueOnError ) {
     stream.on( 'error', err => console.log( err ) );
+  } else {
+    stream.on( 'error', done );
   }
-  return stream.pipe( gulp.dest( outdir ) ).on( 'end', done );
+  return (
+    stream.pipe( gulp.dest( outdir ) )
+      .on( 'error', done )
+      .on( 'end', done )
+  );
 };

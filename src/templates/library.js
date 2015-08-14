@@ -7,6 +7,7 @@ import { watchGlob } from '../tools/watch';
 import { watchify } from '../tools/browserify';
 import { buildJsTask } from '../tools/make';
 import gutil from 'gulp-util';
+import del from 'del';
 
 export function register( gulp, options ) {
   var { projectDir, platforms, outfile, watch } = options;
@@ -29,7 +30,9 @@ export function register( gulp, options ) {
   }
 
   var makeJs = done => {
-    babel( sourceFiles, `${ projectDir }/lib`, done );
+    del( `${ projectDir }/lib`, () => {
+      babel( sourceFiles, `${ projectDir }/lib`, done );
+    });
   };
 
   gulp.task( 'make:js', function( done ) {

@@ -10,7 +10,6 @@ export function browserify( entryFile, options ) {
   var browserify = require( 'browserify' );
   var babelify = require( 'babelify' );
   var path = require( 'path' );
-  var envify = require( 'envify/custom' );
 
   options = _.extend({
     entries: entryFile,
@@ -33,8 +32,22 @@ export function browserify( entryFile, options ) {
     bundle = bundle.transform( shim.configure( options.shim ) );
   }
 
+  if ( options.aliases ) {
+    let aliasify = require( 'aliasify' );
+    bundle = bundle.transform( aliasify, {
+      aliases: options.aliases
+    });
+  }
+
   if ( options.envify ) {
+    let envify = require( 'envify/custom' );
     bundle = bundle.transform( envify( options.envify ) );
+  }
+
+  if ( options.derequire ) {
+    let derequire = require( 'browserify-derequire' );
+    let opts = typeof options.derequire === 'object' ? options.derequire : {};
+    derequire( bundle, opts );
   }
 
   if ( options.uglify ) {

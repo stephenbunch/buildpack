@@ -8,6 +8,7 @@ export function register( gulp, opts ) {
   var sourceDir = path.resolve( opts.projectDir, opts.sourceDir );
   var outDir = path.resolve( opts.projectDir, opts.outDir );
   var entry = path.resolve( opts.projectDir, opts.entry );
+  var watchPaths = opts.watch && opts.watch.map( x => path.resolve( opts.projectDir, x ) );
   var sourceFiles = `${ sourceDir }/**/*.js`;
 
   var nodeArgs = opts.nodeArgs || [];
@@ -52,10 +53,14 @@ export function register( gulp, opts ) {
     };
     watchGlob( sourceDir, run );
     run( done );
+    return run;
   };
 
   gulp.task( 'serve', done => {
-    serve( false, () => {}, done );
+    var run = serve( false, () => {}, done );
+    if ( watchPaths ) {
+      watchGlob( watchPaths, run );
+    }
   });
 
   gulp.task( 'debug', done => {

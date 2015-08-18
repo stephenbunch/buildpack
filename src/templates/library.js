@@ -25,7 +25,7 @@ export function register( gulp, options ) {
   var outFile;
   if ( outfile ) {
     outFile = `${ projectDir }/` + outfile;
-  } else {
+  } else if ( typeof options.standalone === 'string' ) {
     outFile = `${ projectDir }/dist/${ options.standalone }.js`;
   }
 
@@ -36,14 +36,18 @@ export function register( gulp, options ) {
   };
 
   gulp.task( 'make:js', function( done ) {
-    var _ = require( 'lodash' );
-    var task = _.cloneDeep( options );
-    task.entry = entryFile;
-    task.outfile = outFile;
-    var makeBundle = done => {
-      buildJsTask( task, done );
-    };
-    runConcurrent( [ makeBundle, makeJs ], done );
+    if ( outFile ) {
+      var _ = require( 'lodash' );
+      var task = _.cloneDeep( options );
+      task.entry = entryFile;
+      task.outfile = outFile;
+      var makeBundle = done => {
+        buildJsTask( task, done );
+      };
+      runConcurrent( [ makeBundle, makeJs ], done );
+    } else {
+      makeJs( done );
+    }
   });
 
   gulp.task( 'make', [ 'make:js' ] );

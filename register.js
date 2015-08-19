@@ -1,5 +1,5 @@
 require( 'harmonize' )();
-require( 'babel/register' );
+require( 'babel/register' )({ stage: 0 });
 
 module.exports = function( gulp, config ) {
   var register = require( './lib/templates/' + config.template ).register;

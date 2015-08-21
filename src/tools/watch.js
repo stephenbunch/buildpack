@@ -71,7 +71,7 @@ export function watchGroups( groups, callback, transform ) {
         watchGlob( glob, ( path, type ) => {
           if ( type !== 'unlink' ) {
             let destPath = resolveDestinationFromGlob( path, destDir, glob );
-            if ( path.endsWith( '.css' ) ) {
+            if ( transform && path.endsWith( '.css' ) ) {
               transform( gulp.src( path ).pipe( gulp.dest( destPath ) ) );
             } else {
               gulp.src( path ).pipe( gulp.dest( destPath ) ).on( 'end', callback );

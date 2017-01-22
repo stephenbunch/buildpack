@@ -72,5 +72,8 @@
     "vinyl-source-stream": "^1.1.0",
     "watchify": "git://github.com/stephenbunch/watchify.git",
     "yargs": "^3.10.0"
+  },
+  "engines": {
+    "node": "0.12.7"
   }
 }
